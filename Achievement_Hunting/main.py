@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from openpyxl import Workbook
 
 url = "https://www.trueachievements.com"
 user = "Acidreactive"
@@ -45,11 +46,43 @@ soup = BeautifulSoup(r, "html.parser")
 #     img.decompose()
 # img_tag = soup.findAll("img", class_="dlcinfo")
 
+wb = Workbook()
+ws1 = wb.active
+ws1.title = "Game Data"
+ws1['A1'] = "Title"
+ws1['B1'] = "Achievements Earned"
+ws1['C1'] = "Achievements Total"
+ws1['D1'] = "TA Earned"
+ws1['E1'] = "TA Total"
+ws1['F1'] = "GS Earned"
+ws1['G1'] = "GS Total"
+ws2 = wb.create_sheet(title="Meta Data")
+ws2['A1'] = "Title"
+ws2['B1'] = "ACH Ratio"
+ws2['C1'] = "TA Ratio"
+ws2['D1'] = "GS Ratio"
 
+row = 1
 game_library = []
 
 for game in soup.findAll("tr", class_=("even", "odd")):
-    game_library.append(Game(game))
 
-for game in game_library:
-    print(game)
+    new_game = Game(game)
+
+    game_library.append(new_game)
+    row += 1
+    ws1[f"A{row}"] = new_game.name
+    ws1[f"B{row}"] = new_game.ach_earned
+    ws1[f"C{row}"] = new_game.ach_total
+    ws1[f"D{row}"] = new_game.ta_earned
+    ws1[f"E{row}"] = new_game.ta_total
+    ws1[f"F{row}"] = new_game.gs_earned
+    ws1[f"G{row}"] = new_game.gs_total
+    ws2[f"A{row}"] = new_game.name
+    ws2[f"B{row}"] = float(new_game.ach_earned)/float(new_game.ach_total)
+    ws2[f"C{row}"] = float(new_game.ta_earned)/float(new_game.ta_total)
+    ws2[f"D{row}"] = float(new_game.gs_earned)/float(new_game.gs_total)
+    print(new_game)
+
+
+wb.save("./Achievement_Hunting/achievement_hunting.xlsx")
