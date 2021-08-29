@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
+from openpyxl.worksheet.table import Table, TableStyleInfo
 
 url = "https://www.trueachievements.com"
 user = "Acidreactive"
@@ -46,21 +47,26 @@ soup = BeautifulSoup(r, "html.parser")
 #     img.decompose()
 # img_tag = soup.findAll("img", class_="dlcinfo")
 
-wb = Workbook()
+wb = Workbook(write_only=False)
 ws1 = wb.active
 ws1.title = "Game Data"
-ws1['A1'] = "Title"
-ws1['B1'] = "Achievements Earned"
-ws1['C1'] = "Achievements Total"
-ws1['D1'] = "TA Earned"
-ws1['E1'] = "TA Total"
-ws1['F1'] = "GS Earned"
-ws1['G1'] = "GS Total"
+header1 = ["Title", "Achievements Earned", "Achievements Total",
+           "TA Earned", "TA Total", "GS Earned", "GS Total"]
+ws1.append(header1)
+# ws1['A1'] = "Title"
+# ws1['B1'] = "Achievements Earned"
+# ws1['C1'] = "Achievements Total"
+# ws1['D1'] = "TA Earned"
+# ws1['E1'] = "TA Total"
+# ws1['F1'] = "GS Earned"
+# ws1['G1'] = "GS Total"
 ws2 = wb.create_sheet(title="Meta Data")
-ws2['A1'] = "Title"
-ws2['B1'] = "ACH Ratio"
-ws2['C1'] = "TA Ratio"
-ws2['D1'] = "GS Ratio"
+header2 = ["Title", "ACH Ratio", "TA Ratio", "GS Ratio"]
+ws2.append(header2)
+# ws2['A1'] = "Title"
+# ws2['B1'] = "ACH Ratio"
+# ws2['C1'] = "TA Ratio"
+# ws2['D1'] = "GS Ratio"
 
 row = 1
 game_library = []
@@ -68,21 +74,38 @@ game_library = []
 for game in soup.findAll("tr", class_=("even", "odd")):
 
     new_game = Game(game)
-
+    if int(new_game.gs_total) == 0:
+        continue
     game_library.append(new_game)
     row += 1
-    ws1[f"A{row}"] = new_game.name
-    ws1[f"B{row}"] = new_game.ach_earned
-    ws1[f"C{row}"] = new_game.ach_total
-    ws1[f"D{row}"] = new_game.ta_earned
-    ws1[f"E{row}"] = new_game.ta_total
-    ws1[f"F{row}"] = new_game.gs_earned
-    ws1[f"G{row}"] = new_game.gs_total
-    ws2[f"A{row}"] = new_game.name
-    ws2[f"B{row}"] = float(new_game.ach_earned)/float(new_game.ach_total)
-    ws2[f"C{row}"] = float(new_game.ta_earned)/float(new_game.ta_total)
-    ws2[f"D{row}"] = float(new_game.gs_earned)/float(new_game.gs_total)
+    data1 = [new_game.name, new_game.ach_earned, new_game.ach_total,
+             new_game.ta_earned, new_game.ta_total, new_game.gs_earned, new_game.gs_total]
+    ws1.append(data1)
+    ws1[f"A{row}"].hyperlink = url+new_game.link
+    ws1[f"A{row}"].style = "Hyperlink"
+    # ws1[f"A{row}"].value = new_game.name
+    # ws1[f"B{row}"] = new_game.ach_earned
+    # ws1[f"C{row}"] = new_game.ach_total
+    # ws1[f"D{row}"] = new_game.ta_earned
+    # ws1[f"E{row}"] = new_game.ta_total
+    # ws1[f"F{row}"] = new_game.gs_earned
+    # ws1[f"G{row}"] = new_game.gs_total
+    data2 = [f"='Game Data'!A{row}", f"='Game Data'!B{row}/'Game Data'!C{row}",
+             f"='Game Data'!D{row}/'Game Data'!E{row}", f"='Game Data'!F{row}/'Game Data'!G{row}"]
+    ws2.append(data2)
+    # ws2[f"A{row}"] = new_game.name
+    # ws2[f"B{row}"] = f"='Game Data'!B{row}/'Game Data'!C{row}"
+    # ws2[f"C{row}"] = f"='Game Data'!D{row}/'Game Data'!E{row}"
+    # ws2[f"D{row}"] = f"='Game Data'!F{row}/'Game Data'!G{row}"
     print(new_game)
 
+tab = Table(displayName="Game_List", ref=f"A1:g{row}")
 
+# Add a default style with striped rows and banded columns
+style = TableStyleInfo(name="TableStyleMedium7",
+                       showFirstColumn=True, showRowStripes=True)
+tab.tableStyleInfo = style
+
+
+ws1.add_table(tab)
 wb.save("./Achievement_Hunting/achievement_hunting.xlsx")
