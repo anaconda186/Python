@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from openpyxl import Workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
+
 url = "https://www.trueachievements.com"
 user = "Acidreactive"
 show_all = True
@@ -51,23 +52,11 @@ wb = Workbook(write_only=False)
 ws1 = wb.active
 ws1.title = "Game Data"
 header1 = ["Title", "Achievements Earned", "Achievements Total",
-           "TA Earned", "TA Total", "GS Earned", "GS Total"]
+           "TS Earned", "TS Total", "GS Earned", "GS Total"]
 ws1.append(header1)
-# ws1['A1'] = "Title"
-# ws1['B1'] = "Achievements Earned"
-# ws1['C1'] = "Achievements Total"
-# ws1['D1'] = "TA Earned"
-# ws1['E1'] = "TA Total"
-# ws1['F1'] = "GS Earned"
-# ws1['G1'] = "GS Total"
 ws2 = wb.create_sheet(title="Meta Data")
-header2 = ["Title", "ACH Ratio", "TA Ratio", "GS Ratio"]
+header2 = ["Title", "ACH Ratio", "TS Ratio", "GS Ratio", "TA-Ratio"]
 ws2.append(header2)
-# ws2['A1'] = "Title"
-# ws2['B1'] = "ACH Ratio"
-# ws2['C1'] = "TA Ratio"
-# ws2['D1'] = "GS Ratio"
-
 row = 1
 game_library = []
 
@@ -83,20 +72,9 @@ for game in soup.findAll("tr", class_=("even", "odd")):
     ws1.append(data1)
     ws1[f"A{row}"].hyperlink = url+new_game.link
     ws1[f"A{row}"].style = "Hyperlink"
-    # ws1[f"A{row}"].value = new_game.name
-    # ws1[f"B{row}"] = new_game.ach_earned
-    # ws1[f"C{row}"] = new_game.ach_total
-    # ws1[f"D{row}"] = new_game.ta_earned
-    # ws1[f"E{row}"] = new_game.ta_total
-    # ws1[f"F{row}"] = new_game.gs_earned
-    # ws1[f"G{row}"] = new_game.gs_total
     data2 = [f"='Game Data'!A{row}", f"='Game Data'!B{row}/'Game Data'!C{row}",
-             f"='Game Data'!D{row}/'Game Data'!E{row}", f"='Game Data'!F{row}/'Game Data'!G{row}"]
+             f"='Game Data'!D{row}/'Game Data'!E{row}", f"='Game Data'!F{row}/'Game Data'!G{row}", f"='Game Data'!E{row}/'Game Data'!G{row}"]
     ws2.append(data2)
-    # ws2[f"A{row}"] = new_game.name
-    # ws2[f"B{row}"] = f"='Game Data'!B{row}/'Game Data'!C{row}"
-    # ws2[f"C{row}"] = f"='Game Data'!D{row}/'Game Data'!E{row}"
-    # ws2[f"D{row}"] = f"='Game Data'!F{row}/'Game Data'!G{row}"
     print(new_game)
 
 tab = Table(displayName="Game_List", ref=f"A1:g{row}")
@@ -105,7 +83,6 @@ tab = Table(displayName="Game_List", ref=f"A1:g{row}")
 style = TableStyleInfo(name="TableStyleMedium7",
                        showFirstColumn=True, showRowStripes=True)
 tab.tableStyleInfo = style
-
 
 ws1.add_table(tab)
 wb.save("./Achievement_Hunting/achievement_hunting.xlsx")
