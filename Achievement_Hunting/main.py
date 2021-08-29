@@ -18,8 +18,8 @@ class Game:
         self.name = div.find("td", class_="smallgame").a.text
         self.link = div.select("td:nth-of-type(2)")[0].a['href']
         achievements = div.select("td:nth-of-type(3)")[0].text.split(" ")
-        self.achievements_total = int(achievements[2].replace(',', ''))
-        self.achievements_earned = int(achievements[0].replace(',', ''))
+        self.ach_total = int(achievements[2].replace(',', ''))
+        self.ach_earned = int(achievements[0].replace(',', ''))
         ta_score = div.select("td:nth-of-type(4)")[0].text.split(" ")
         self.ta_total = int(ta_score[2].replace(',', ''))
         self.ta_earned = int(ta_score[0].replace(',', ''))
@@ -30,7 +30,11 @@ class Game:
             ',', '').replace("(", "").replace(')', ''))
 
     def __str__(self):
-        return f"{self.name}, {self.achievements_earned} of {self.achievements_total} achievements, {self.ta_earned} of {self.ta_total} TA Points, {self.gs_earned} of {self.gs_total} GS, {url}{self.link}"
+        title = self.name
+        ach = f"{self.ach_earned} of {self.ach_total} achievements"
+        ta_points = f"{self.ta_earned} of {self.ta_total} TA Points"
+        gs_score = f"{self.gs_earned} of {self.gs_total} GS"
+        return f"{title}, {ach}, {ta_points}, {gs_score}, {url}{self.link}"
 
 
 r = requests.get(f"{url}/gamer/{user}/games{show}").text
