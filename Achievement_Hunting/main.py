@@ -1,4 +1,5 @@
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -50,7 +51,7 @@ soup = BeautifulSoup(r, "html.parser")
 
 wb = Workbook(write_only=False)
 ws1 = wb.active
-ws1.title = "Game Data"
+ws1.title = "Game"
 header1 = ["Title", "Achievements Earned", "Achievements Total",
            "TS Earned", "TS Total", "GS Earned", "GS Total"]
 ws1.append(header1)
@@ -62,20 +63,20 @@ game_library = []
 
 for game in soup.findAll("tr", class_=("even", "odd")):
 
-    new_game = Game(game)
-    if int(new_game.gs_total) == 0:
+    game = Game(game)
+    if int(game.gs_total) == 0:
         continue
-    game_library.append(new_game)
+    # game_library.append(game)
     row += 1
-    data1 = [new_game.name, new_game.ach_earned, new_game.ach_total,
-             new_game.ta_earned, new_game.ta_total, new_game.gs_earned, new_game.gs_total]
+    data1 = [game.name, game.ach_earned, game.ach_total,
+             game.ta_earned, game.ta_total, game.gs_earned, game.gs_total]
     ws1.append(data1)
-    ws1[f"A{row}"].hyperlink = url+new_game.link
+    ws1[f"A{row}"].hyperlink = url+game.link
     ws1[f"A{row}"].style = "Hyperlink"
-    data2 = [f"='Game Data'!A{row}", f"='Game Data'!B{row}/'Game Data'!C{row}",
-             f"='Game Data'!D{row}/'Game Data'!E{row}", f"='Game Data'!F{row}/'Game Data'!G{row}", f"='Game Data'!E{row}/'Game Data'!G{row}"]
+    data2 = [f"='Game'!A{row}", f"='Game'!B{row}/'Game'!C{row}",
+             f"='Game'!D{row}/'Game'!E{row}", f"='Game'!F{row}/'Game'!G{row}", f"='Game'!E{row}/'Game'!G{row}"]
     ws2.append(data2)
-    print(new_game)
+    # print(game)
 
 tab = Table(displayName="Game_List", ref=f"A1:g{row}")
 
@@ -86,3 +87,6 @@ tab.tableStyleInfo = style
 
 ws1.add_table(tab)
 wb.save("./Achievement_Hunting/achievement_hunting.xlsx")
+
+data = pd.read_excel(ws1)
+print(data)
