@@ -97,7 +97,7 @@ for game in soup.findAll("tr", class_=("even", "odd")):
         f"='Game'!E{row}/'Game'!G{row}",
     ]
     ws2.append(data2)
-    # print(game)
+    print(game)
 
 tab = Table(displayName="Game_List", ref=f"A1:g{row}")
 
@@ -108,7 +108,7 @@ style = TableStyleInfo(
 tab.tableStyleInfo = style
 
 ws1.add_table(tab)
-wb.save("./Achievement_Hunting/achievement_hunting_venv/achievement_hunting.xlsx")
+wb.save("./achievement_hunting.xlsx")
 
 # data = pd.read_excel(ws1)
-print(game_library)
+# print(game_library)
