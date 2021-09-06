@@ -110,5 +110,5 @@ tab.tableStyleInfo = style
 ws1.add_table(tab)
 wb.save("./achievement_hunting.xlsx")
 
-# data = pd.read_excel(ws1)
+data = pd.read_excel(ws1)
 # print(game_library)
