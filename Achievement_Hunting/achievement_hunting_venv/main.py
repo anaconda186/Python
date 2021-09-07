@@ -1,13 +1,17 @@
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-from openpyxl import Workbook
-from openpyxl.worksheet.table import Table, TableStyleInfo
+# from openpyxl import Workbook
+# from openpyxl.worksheet.table import Table, TableStyleInfo
 
 
 url = "https://www.trueachievements.com"
 user = "Acidreactive"
 show_all = True
+ach_weights = 1.0
+ta_weights = 1.0
+gs_weights = 1.0
+weight_limit = 0.001
 
 if show_all:
     show = "?oGamerGamesList_ShowAll=True"
@@ -34,6 +38,21 @@ class Game:
         self.gs_earned = int(
             gs_score[0].replace(",", "").replace("(", "").replace(")", "")
         )
+        self.ach_ratio = self.ach_earned/self.ach_total
+        self.ta_ratio = self.ta_earned/self.ta_total
+        self.gs_ratio = self.gs_earned/self.gs_total
+        self.total_difficulty = 1/(self.ta_total/self.gs_total)**2
+        self.difficulty_left = 1 / \
+            ((self.ta_total-self.ta_earned)/(self.gs_total/self.gs_earned))**2
+        self.ach_weight = 1 / \
+            max(weight_limit, abs(self.ach_ratio -
+                                  (self.total_difficulty*ach_weights)))
+        self.ta_weight = 1 / \
+            max(weight_limit, abs(self.ta_ratio -
+                                  (self.total_difficulty*ta_weights)))
+        self.gs_weight = 1 / \
+            max(weight_limit, abs(self.gs_ratio -
+                                  (self.total_difficulty*gs_weights)))
 
     def __str__(self):
         title = self.name
@@ -41,6 +60,28 @@ class Game:
         ta_points = f"{self.ta_earned} of {self.ta_total} TA Points"
         gs_score = f"{self.gs_earned} of {self.gs_total} GS"
         return f"{title}, {ach}, {ta_points}, {gs_score}, {url}{self.link}"
+
+    def __repr__(self):
+        title = self.name
+        ach = f"{self.ach_earned} of {self.ach_total} achievements"
+        ta_points = f"{self.ta_earned} of {self.ta_total} TA Points"
+        gs_score = f"{self.gs_earned} of {self.gs_total} GS"
+        return f"\n{title}, {ach}, {ta_points}, {gs_score}, {url}{self.link}"
+
+    def update_ach_weights(self, weight):
+        self.ach_weight = 1 / \
+            max(weight_limit, abs(self.ach_ratio-(self.total_difficulty*weight)))
+        return self.ach_weight
+
+    def update_ta_weights(self, weight):
+        self.ta_weight = 1 / \
+            max(weight_limit, abs(self.ta_ratio-(self.total_difficulty*weight)))
+        return self.ta_weight
+
+    def update_gs_weights(self, weight):
+        self.gs_weight = 1 / \
+            max(weight_limit, abs(self.gs_ratio-(self.total_difficulty*weight)))
+        return self.gs_weight
 
 
 r = requests.get(f"{url}/gamer/{user}/games{show}").text
@@ -51,64 +92,19 @@ soup = BeautifulSoup(r, "html.parser")
 #     img.decompose()
 # img_tag = soup.findAll("img", class_="dlcinfo")
 
-wb = Workbook(write_only=False)
-ws1 = wb.active
-ws1.title = "Game"
-header1 = [
-    "Title",
-    "Achievements Earned",
-    "Achievements Total",
-    "TS Earned",
-    "TS Total",
-    "GS Earned",
-    "GS Total",
-]
-ws1.append(header1)
-ws2 = wb.create_sheet(title="Meta Data")
-header2 = ["Title", "ACH Ratio", "TS Ratio", "GS Ratio", "TA-Ratio"]
-ws2.append(header2)
-row = 1
+
 game_library = []
 
 for game in soup.findAll("tr", class_=("even", "odd")):
-
-    game = Game(game)
-    if int(game.gs_total) == 0:
+    if int(
+        game.select("td:nth-of-type(5)")[0].text.split(" ")[
+            2].replace(",", "").replace("(", "").replace(")", "")
+    ) == 0:
         continue
+    game = Game(game)
+
     game_library.append(game)
-    row += 1
-    data1 = [
-        game.name,
-        game.ach_earned,
-        game.ach_total,
-        game.ta_earned,
-        game.ta_total,
-        game.gs_earned,
-        game.gs_total,
-    ]
-    ws1.append(data1)
-    ws1[f"A{row}"].hyperlink = url + game.link
-    ws1[f"A{row}"].style = "Hyperlink"
-    data2 = [
-        f"='Game'!A{row}",
-        f"='Game'!B{row}/'Game'!C{row}",
-        f"='Game'!D{row}/'Game'!E{row}",
-        f"='Game'!F{row}/'Game'!G{row}",
-        f"='Game'!E{row}/'Game'!G{row}",
-    ]
-    ws2.append(data2)
-    # print(game)
 
-tab = Table(displayName="Game_List", ref=f"A1:g{row}")
-
-# Add a default style with striped rows and banded columns
-style = TableStyleInfo(
-    name="TableStyleMedium7", showFirstColumn=True, showRowStripes=True
-)
-tab.tableStyleInfo = style
-
-ws1.add_table(tab)
-wb.save("./achievement_hunting.xlsx")
-
+game_library.sort(key=lambda x: x.name)
 data = pd.read_excel("./achievement_hunting.xlsx")
-print(data)
+print(game_library)
