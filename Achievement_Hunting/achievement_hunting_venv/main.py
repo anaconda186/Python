@@ -1,3 +1,4 @@
+from tokenize import Exponent
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -59,14 +60,14 @@ class Game:
         ach = f"{self.ach_earned} of {self.ach_total} achievements"
         ta_points = f"{self.ta_earned} of {self.ta_total} TA Points"
         gs_score = f"{self.gs_earned} of {self.gs_total} GS"
-        return f"{title}, {ach}, {ta_points}, {gs_score}, {url}{self.link}"
+        return f"\n{title}, {ach}, {ta_points}, {gs_score}, {self.ach_weight} \n{url}{self.link}"
 
     def __repr__(self):
         title = self.name
         ach = f"{self.ach_earned} of {self.ach_total} achievements"
         ta_points = f"{self.ta_earned} of {self.ta_total} TA Points"
         gs_score = f"{self.gs_earned} of {self.gs_total} GS"
-        return f"\n{title}, {ach}, {ta_points}, {gs_score}, {url}{self.link}"
+        return f"\n{title}, {ach}, {ta_points}, {gs_score}, {self.ach_weight} \n{url}{self.link}"
 
     def update_ach_weights(self, weight):
         self.ach_weight = 1 / \
@@ -104,7 +105,42 @@ for game in soup.findAll("tr", class_=("even", "odd")):
     game = Game(game)
 
     game_library.append(game)
+exponent = -1
 
-game_library.sort(key=lambda x: x.name)
+while exponent >= -5:
+    proposed_ach_weights = ach_weights + (10**exponent)
+    current_ach_sum = 0.0
+    proposed_ach_sum = 0.0
+    for game in game_library:
+        game.update_ach_weights(proposed_ach_weights)
+        proposed_ach_sum += game.ach_weight * \
+            (abs(game.ach_ratio-(game.total_difficulty*proposed_ach_weights))**2)
+        game.update_ach_weights(ach_weights)
+        current_ach_sum += game.ach_weight * \
+            (abs(game.ach_ratio-(game.total_difficulty*ach_weights))**2)
+    if proposed_ach_sum < current_ach_sum:
+        ach_weights = proposed_ach_weights
+        print(ach_weights, exponent)
+        continue
+    proposed_ach_weights = ach_weights - (10**exponent)
+    current_ach_sum = 0.0
+    proposed_ach_sum = 0.0
+    for game in game_library:
+        game.update_ach_weights(proposed_ach_weights)
+        proposed_ach_sum += game.ach_weight * \
+            (abs(game.ach_ratio-(game.total_difficulty*proposed_ach_weights))**2)
+        game.update_ach_weights(ach_weights)
+        current_ach_sum += game.ach_weight * \
+            (abs(game.ach_ratio-(game.total_difficulty*ach_weights))**2)
+    if proposed_ach_sum < current_ach_sum:
+        ach_weights = proposed_ach_weights
+        print(ach_weights, exponent)
+        continue
+    exponent -= 1
+    print(ach_weights, exponent)
+
+
+game_library.sort(key=lambda x: x.ach_weight, reverse=True)
 data = pd.read_excel("./achievement_hunting.xlsx")
-print(game_library)
+# print(game_library)
+print(ach_weights)
