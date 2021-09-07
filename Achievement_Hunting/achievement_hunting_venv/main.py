@@ -9,9 +9,9 @@ from bs4 import BeautifulSoup
 url = "https://www.trueachievements.com"
 user = "Acidreactive"
 show_all = True
-ach_weights = 1.0
-ta_weights = 1.0
-gs_weights = 1.0
+ach_weights = 2.0
+ta_weights = 2.0
+gs_weights = 2.0
 weight_limit = 0.001
 
 if show_all:
@@ -105,42 +105,96 @@ for game in soup.findAll("tr", class_=("even", "odd")):
     game = Game(game)
 
     game_library.append(game)
-exponent = -1
 
+### Start ACH weighting Loop ###
+exponent = -1
 while exponent >= -5:
-    proposed_ach_weights = ach_weights + (10**exponent)
+    prop_pos_ach_weights = ach_weights + (10**exponent)
+    prop_neg_ach_weights = ach_weights - (10**exponent)
     current_ach_sum = 0.0
-    proposed_ach_sum = 0.0
+    prop_pos_ach_sum = 0.0
+    prop_neg_ach_sum = 0.0
     for game in game_library:
-        game.update_ach_weights(proposed_ach_weights)
-        proposed_ach_sum += game.ach_weight * \
-            (abs(game.ach_ratio-(game.total_difficulty*proposed_ach_weights))**2)
         game.update_ach_weights(ach_weights)
         current_ach_sum += game.ach_weight * \
             (abs(game.ach_ratio-(game.total_difficulty*ach_weights))**2)
-    if proposed_ach_sum < current_ach_sum:
-        ach_weights = proposed_ach_weights
+        game.update_ach_weights(prop_pos_ach_weights)
+        prop_pos_ach_sum += game.ach_weight * \
+            (abs(game.ach_ratio-(game.total_difficulty*prop_pos_ach_weights))**2)
+        game.update_ach_weights(prop_neg_ach_weights)
+        prop_neg_ach_sum += game.ach_weight * \
+            (abs(game.ach_ratio-(game.total_difficulty*prop_neg_ach_weights))**2)
+    if prop_pos_ach_sum < current_ach_sum:
+        ach_weights = prop_pos_ach_weights
         print(ach_weights, exponent)
         continue
-    proposed_ach_weights = ach_weights - (10**exponent)
-    current_ach_sum = 0.0
-    proposed_ach_sum = 0.0
-    for game in game_library:
-        game.update_ach_weights(proposed_ach_weights)
-        proposed_ach_sum += game.ach_weight * \
-            (abs(game.ach_ratio-(game.total_difficulty*proposed_ach_weights))**2)
-        game.update_ach_weights(ach_weights)
-        current_ach_sum += game.ach_weight * \
-            (abs(game.ach_ratio-(game.total_difficulty*ach_weights))**2)
-    if proposed_ach_sum < current_ach_sum:
-        ach_weights = proposed_ach_weights
+    if prop_neg_ach_sum < current_ach_sum:
+        ach_weights = prop_neg_ach_weights
         print(ach_weights, exponent)
         continue
     exponent -= 1
     print(ach_weights, exponent)
 
+### Start TA weighting Loop ###
+exponent = -1
+while exponent >= -5:
+    prop_pos_ta_weights = ta_weights + (10**exponent)
+    prop_neg_ta_weights = ta_weights - (10**exponent)
+    current_ta_sum = 0.0
+    prop_pos_ta_sum = 0.0
+    prop_neg_ta_sum = 0.0
+    for game in game_library:
+        game.update_ta_weights(ta_weights)
+        current_ta_sum += game.ta_weight * \
+            (abs(game.ta_ratio-(game.total_difficulty*ta_weights))**2)
+        game.update_ta_weights(prop_pos_ta_weights)
+        prop_pos_ta_sum += game.ta_weight * \
+            (abs(game.ta_ratio-(game.total_difficulty*prop_pos_ta_weights))**2)
+        game.update_ta_weights(prop_neg_ta_weights)
+        prop_neg_ta_sum += game.ta_weight * \
+            (abs(game.ta_ratio-(game.total_difficulty*prop_neg_ta_weights))**2)
+    if prop_pos_ta_sum < current_ta_sum:
+        ta_weights = prop_pos_ta_weights
+        print(ta_weights, exponent)
+        continue
+    if prop_neg_ta_sum < current_ta_sum:
+        ta_weights = prop_neg_ta_weights
+        print(ta_weights, exponent)
+        continue
+    exponent -= 1
+    print(ta_weights, exponent)
+
+### Start GS weighting Loop ###
+exponent = -1
+while exponent >= -5:
+    prop_pos_gs_weights = gs_weights + (10**exponent)
+    prop_neg_gs_weights = gs_weights - (10**exponent)
+    current_gs_sum = 0.0
+    prop_pos_gs_sum = 0.0
+    prop_neg_gs_sum = 0.0
+    for game in game_library:
+        game.update_gs_weights(gs_weights)
+        current_gs_sum += game.gs_weight * \
+            (abs(game.gs_ratio-(game.total_difficulty*gs_weights))**2)
+        game.update_gs_weights(prop_pos_gs_weights)
+        prop_pos_gs_sum += game.gs_weight * \
+            (abs(game.gs_ratio-(game.total_difficulty*prop_pos_gs_weights))**2)
+        game.update_gs_weights(prop_neg_gs_weights)
+        prop_neg_gs_sum += game.gs_weight * \
+            (abs(game.gs_ratio-(game.total_difficulty*prop_neg_gs_weights))**2)
+    if prop_pos_gs_sum < current_gs_sum:
+        gs_weights = prop_pos_gs_weights
+        print(gs_weights, exponent)
+        continue
+    if prop_neg_gs_sum < current_gs_sum:
+        gs_weights = prop_neg_gs_weights
+        print(gs_weights, exponent)
+        continue
+    exponent -= 1
+    print(gs_weights, exponent)
+
 
 game_library.sort(key=lambda x: x.ach_weight, reverse=True)
 data = pd.read_excel("./achievement_hunting.xlsx")
 # print(game_library)
-print(ach_weights)
+print(ach_weights, ta_weights, gs_weights)
