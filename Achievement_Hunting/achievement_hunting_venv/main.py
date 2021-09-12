@@ -1,7 +1,7 @@
-from tokenize import Exponent
-import requests
 import pandas as pd
+import requests
 from bs4 import BeautifulSoup
+
 # from openpyxl import Workbook
 # from openpyxl.worksheet.table import Table, TableStyleInfo
 
