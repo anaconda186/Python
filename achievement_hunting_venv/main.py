@@ -1,4 +1,5 @@
 from game_library_functions import *
+from app import app
 
 if __name__ == "__main__":
 
