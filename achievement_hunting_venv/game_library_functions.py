@@ -183,7 +183,7 @@ def predict_gains(game_library: list, model_dict: dict) -> tuple[float, float, f
 
 
 def get_curve_fit_xy(game_library: list) -> list[list[float]]:
-    xy_values = [[], [], [], []]
+    xy_values = [[], [], [], [], []]
     for game in game_library:
         game.append_xy_value(xy_values)
     return xy_values
@@ -198,10 +198,29 @@ def predict_logistic_gains(
     for game in game_library:
         game.predicted_logistic_ratios(logistic_constant)
         game.predicted_logistic_gains()
-        # if game.predicted_logistic_ach_gains > 0:
-        total_ach_gain = total_ach_gain + game.predicted_logistic_ach_gains
-        # if game.predicted_logistic_ta_gains > 0:
-        total_ta_gain = total_ta_gain + game.predicted_logistic_ta_gains
-        # if game.predicted_logistic_gs_gains > 0:
-        total_gs_gain = total_gs_gain + game.predicted_logistic_gs_gains
+        if game.predicted_logistic_ach_gains > 0:
+            total_ach_gain = total_ach_gain + game.predicted_logistic_ach_gains
+        if game.predicted_logistic_ta_gains > 0:
+            total_ta_gain = total_ta_gain + game.predicted_logistic_ta_gains
+        if game.predicted_logistic_gs_gains > 0:
+            total_gs_gain = total_gs_gain + game.predicted_logistic_gs_gains
     return total_ach_gain, total_ta_gain, total_gs_gain
+
+
+def norm_gains(game_library: list) -> None:
+    max_ach_value = max(game.predicted_logistic_ach_gains for game in game_library)
+    min_ach_value = min(game.predicted_logistic_ach_gains for game in game_library)
+    max_ta_value = max(game.predicted_logistic_ta_gains for game in game_library)
+    min_ta_value = min(game.predicted_logistic_ta_gains for game in game_library)
+    max_gs_value = max(game.predicted_logistic_gs_gains for game in game_library)
+    min_gs_value = min(game.predicted_logistic_ta_gains for game in game_library)
+
+    for game in game_library:
+        game.normalize_gains(
+            max_ach_value,
+            min_ach_value,
+            max_ta_value,
+            min_ta_value,
+            max_gs_value,
+            min_gs_value,
+        )

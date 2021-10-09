@@ -6,11 +6,11 @@ if __name__ == "__main__":
 
     # starting variables
     gamer = input("What is you Gamertag?").replace(" ", "+")
-    ach_weights = 1.0
-    ta_weights = 1.0
-    gs_weights = 1.0
-    weight_limit = 0.001
-    precision = 9
+    # ach_weights = 1.0
+    # ta_weights = 1.0
+    # gs_weights = 1.0
+    # weight_limit = 0.001
+    # precision = 9
 
     if gamer != "":
         game_library = get_game_list(gamer)
@@ -51,22 +51,33 @@ if __name__ == "__main__":
 
     # Call Curve_fit
     constants = logit_curve_fit(xy_values)
-    print(constants[0])
-    print(constants[1])
-    print(constants[2])
 
     # Establish Predicted Logistic Values
-
     total_ach_gain, total_ta_gain, total_gs_gain = predict_logistic_gains(
         game_library, constants
     )
 
-    game_library.sort(key=lambda x: x.predicted_logistic_gs_gains)
+    # Normalize gains
+    norm_gains(game_library)
+
+    # Sort Game library
+    game_library.sort(key=lambda x: x.total_norm_value)
 
     print(game_library)
     # print(
     #     f"ACH: M * {ach_weights} + {ach_alpha}, TA: M * {ta_weights} + {ta_alpha}, GS: M * {gs_weights} + {gs_alpha}"
     # )
+    print("\n")
     print(
         f"Total Ach gain: {total_ach_gain:.0f}, Total TA gain: {total_ta_gain:.0f}, Total GS gain: {total_gs_gain:.0f}, Game Count : {len(game_library)}"
+    )
+    print("\n")
+    print(
+        f"ACH | a: {constants[0][0]:.5f}, b: {constants[0][1]:.5f}, c: {constants[0][2]:.5f}, d: {constants[0][3]:.5f}, g:{constants[0][4]:.5f}"
+    )
+    print(
+        f"TA  | a: {constants[1][0]:.5f}, b: {constants[1][1]:.5f}, c: {constants[1][2]:.5f}, d: {constants[1][3]:.5f}, g:{constants[1][4]:.5f}"
+    )
+    print(
+        f"GS  | a: {constants[2][0]:.5f}, b: {constants[2][1]:.5f}, c: {constants[2][2]:.5f}, d: {constants[2][3]:.5f}, g:{constants[2][4]:.5f}"
     )

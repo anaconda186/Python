@@ -11,7 +11,7 @@ def logit_curve_fit(
     ach_constants = optimize.curve_fit(
         logit,
         xy_values[0],
-        xy_values[1],
+        xy_values[2],
         p0=(0.1, 2.0, 50.0, 1.0, 4000.0),
         bounds=(0.0, [1.0, np.inf, np.inf, 1.0, np.inf]),
         method="trf",
@@ -20,7 +20,7 @@ def logit_curve_fit(
     ta_constants = optimize.curve_fit(
         logit,
         xy_values[0],
-        xy_values[2],
+        xy_values[3],
         p0=(0.1, 2.0, 50.0, 1.0, 4000.0),
         bounds=(0.0, [1.0, np.inf, np.inf, 1.0, np.inf]),
         method="trf",
@@ -29,7 +29,7 @@ def logit_curve_fit(
     gs_constants = optimize.curve_fit(
         logit,
         xy_values[0],
-        xy_values[3],
+        xy_values[4],
         p0=(0.1, 2.0, 50.0, 1.0, 4000.0),
         bounds=(0.0, [1.0, np.inf, np.inf, 1.0, np.inf]),
         method="trf",
