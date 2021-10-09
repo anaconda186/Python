@@ -14,7 +14,8 @@ def get_game_list(gamer: str = "Acidreactive") -> list:
 
     game_library = []
 
-    for game in soup.findAll("tr", class_=("even", "odd")):
+    for game in soup.findAll("tr", class_=("even", "odd", "green")):
+
         if (
             int(
                 game.select("td:nth-of-type(5)")[0]
@@ -172,10 +173,35 @@ def predict_gains(game_library: list, model_dict: dict) -> tuple[float, float, f
             model_dict["gs_alpha"],
         )
         game.predicted_gains()
-        # if game.predicted_ach_gains > 0:
-        total_ach_gain = total_ach_gain + game.predicted_ach_gains
-        # if game.predicted_ta_gains > 0:
-        total_ta_gain = total_ta_gain + game.predicted_ta_gains
-        # if game.predicted_gs_gains > 0:
-        total_gs_gain = total_gs_gain + game.predicted_gs_gains
+        if game.predicted_ach_gains > 0:
+            total_ach_gain = total_ach_gain + game.predicted_ach_gains
+        if game.predicted_ta_gains > 0:
+            total_ta_gain = total_ta_gain + game.predicted_ta_gains
+        if game.predicted_gs_gains > 0:
+            total_gs_gain = total_gs_gain + game.predicted_gs_gains
+    return total_ach_gain, total_ta_gain, total_gs_gain
+
+
+def get_curve_fit_xy(game_library: list) -> list[list[float]]:
+    xy_values = [[], [], [], []]
+    for game in game_library:
+        game.append_xy_value(xy_values)
+    return xy_values
+
+
+def predict_logistic_gains(
+    game_library: list, logistic_constant: tuple[list[float], list[float], list[float]]
+) -> tuple[float, float, float]:
+    total_ach_gain = 0.0
+    total_ta_gain = 0.0
+    total_gs_gain = 0.0
+    for game in game_library:
+        game.predicted_logistic_ratios(logistic_constant)
+        game.predicted_logistic_gains()
+        # if game.predicted_logistic_ach_gains > 0:
+        total_ach_gain = total_ach_gain + game.predicted_logistic_ach_gains
+        # if game.predicted_logistic_ta_gains > 0:
+        total_ta_gain = total_ta_gain + game.predicted_logistic_ta_gains
+        # if game.predicted_logistic_gs_gains > 0:
+        total_gs_gain = total_gs_gain + game.predicted_logistic_gs_gains
     return total_ach_gain, total_ta_gain, total_gs_gain

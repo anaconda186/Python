@@ -1,4 +1,9 @@
 # Global Variables for all Games
+
+import requests
+from bs4 import BeautifulSoup
+
+
 url = "https://www.trueachievements.com"
 
 
@@ -7,7 +12,7 @@ class Game:
     Create Game Class
     """
 
-    def __init__(self, div):
+    def __init__(self, div) -> None:
         """
         Intializes the game object
 
@@ -33,41 +38,45 @@ class Game:
         self.ta_ratio = self.ta_earned / self.ta_total
         self.gs_ratio = self.gs_earned / self.gs_total
         self.total_difficulty = 1 / (self.ta_total / self.gs_total) ** 2
-        self.difficulty_left = (
-            1
-            / ((self.ta_total - self.ta_earned) / (self.gs_total / self.gs_earned)) ** 2
-        )
+        if self.gs_total == self.gs_earned:
+            self.difficulty_left = 1
+        else:
+            self.difficulty_left = (
+                1
+                / ((self.ta_total - self.ta_earned) / (self.gs_total / self.gs_earned))
+                ** 2
+            )
         self.ach_weight = 1 / max(0.001, abs(self.ach_ratio - self.total_difficulty))
         self.ta_weight = 1 / max(0.001, abs(self.ta_ratio - self.total_difficulty))
         self.gs_weight = 1 / max(0.001, abs(self.gs_ratio - self.total_difficulty))
 
-    def __str__(self):
+    def __str__(self) -> str:
         title = self.name
         ach = f"{self.ach_earned} of {self.ach_total} achievements"
         ta_points = f"{self.ta_earned} of {self.ta_total} TA Points"
         gs_score = f"{self.gs_earned} of {self.gs_total} GS"
-        return f"\n{title}, {ach}, {ta_points}, {gs_score}, {self.ach_weight} \n{url}{self.link}"
+        return f"\n{title} | {ach} | {ta_points} | {gs_score} | {self.total_difficulty}\nAchievement gain: {self.predicted_logistic_ach_gains:.0f} | TrueAchievement gain: {self.predicted_logistic_ta_gains:.0f} | Gamerscore gain: {self.predicted_logistic_gs_gains:.0f}\n{url}{self.link}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         title = self.name
-        ach = f"ACH Gain: {self.predicted_ach_gains}"
-        ta_points = f"TA Gain: {self.predicted_ta_gains}"
-        gs_score = f"GS Gain: {self.predicted_gs_gains}"
-        return f"\n{title}, {ach}, {ta_points}, {gs_score}, \n{url}{self.link}"
+        ach = f"{self.ach_earned} of {self.ach_total} achievements"
+        ta_points = f"{self.ta_earned} of {self.ta_total} TA Points"
+        gs_score = f"{self.gs_earned} of {self.gs_total} GS"
+        return f"\n\n{title} | {ach} | {ta_points} | {gs_score} | {self.total_difficulty}\nAchievement gain: {self.predicted_logistic_ach_ratio:.2f} (+{self.predicted_logistic_ach_gains:.0f}) | TrueAchievement gain: {self.predicted_logistic_ta_ratio:.2f} (+{self.predicted_logistic_ta_gains:.0f}) | Gamerscore gain: {self.predicted_logistic_gs_ratio:.2f} (+{self.predicted_logistic_gs_gains:.0f})\n{url}{self.link}"
 
-    def update_ach_weights(self, weight, weight_limit):
+    def update_ach_weights(self, weight: float, weight_limit: float) -> float:
         self.ach_weight = 1 / max(
             weight_limit, abs(self.ach_ratio - (self.total_difficulty * weight))
         )
         return self.ach_weight
 
-    def update_ta_weights(self, weight, weight_limit):
+    def update_ta_weights(self, weight: float, weight_limit: float) -> float:
         self.ta_weight = 1 / max(
             weight_limit, abs(self.ta_ratio - (self.total_difficulty * weight))
         )
         return self.ta_weight
 
-    def update_gs_weights(self, weight, weight_limit):
+    def update_gs_weights(self, weight: float, weight_limit: float) -> float:
         self.gs_weight = 1 / max(
             weight_limit, abs(self.gs_ratio - (self.total_difficulty * weight))
         )
@@ -75,13 +84,13 @@ class Game:
 
     def predicted_ratios(
         self,
-        total_ach_weight,
-        total_ach_alpha,
-        total_ta_weight,
-        total_ta_alpha,
-        total_gs_weight,
-        total_gs_alpha,
-    ):
+        total_ach_weight: float,
+        total_ach_alpha: float,
+        total_ta_weight: float,
+        total_ta_alpha: float,
+        total_gs_weight: float,
+        total_gs_alpha: float,
+    ) -> None:
         self.predicted_ach_ratio = min(
             1,
             ((self.total_difficulty * total_ach_weight) + total_ach_alpha)
@@ -107,7 +116,7 @@ class Game:
             ),
         )
 
-    def predicted_gains(self):
+    def predicted_gains(self) -> None:
         self.predicted_ach_gains = (
             self.predicted_ach_ratio * self.ach_total - self.ach_earned
         )
@@ -116,4 +125,66 @@ class Game:
         )
         self.predicted_gs_gains = (
             self.predicted_gs_ratio * self.gs_total - self.gs_earned
+        )
+
+    def append_xy_value(
+        self, list_of_list: tuple[list[float], list[float], list[float], list[float]]
+    ) -> None:
+        list_of_list[0].append(self.total_difficulty)
+        list_of_list[1].append(self.ach_ratio)
+        list_of_list[2].append(self.ta_ratio)
+        list_of_list[3].append(self.gs_ratio)
+
+    def predicted_logistic_ratios(
+        self, logistic_constant: tuple[list[float], list[float], list[float]]
+    ) -> None:
+        self.predicted_logistic_ach_ratio = logistic_constant[0][3] + (
+            (logistic_constant[0][0] - logistic_constant[0][3])
+            / (
+                (
+                    1
+                    + (
+                        (self.total_difficulty / logistic_constant[0][2])
+                        ** logistic_constant[0][1]
+                    )
+                )
+                ** logistic_constant[0][4]
+            )
+        )
+        self.predicted_logistic_ta_ratio = logistic_constant[1][3] + (
+            (logistic_constant[1][0] - logistic_constant[1][3])
+            / (
+                (
+                    1
+                    + (
+                        (self.total_difficulty / logistic_constant[1][2])
+                        ** logistic_constant[1][1]
+                    )
+                )
+                ** logistic_constant[1][4]
+            )
+        )
+        self.predicted_logistic_gs_ratio = logistic_constant[2][3] + (
+            (logistic_constant[2][0] - logistic_constant[2][3])
+            / (
+                (
+                    1
+                    + (
+                        (self.total_difficulty / logistic_constant[2][2])
+                        ** logistic_constant[2][1]
+                    )
+                )
+                ** logistic_constant[2][4]
+            )
+        )
+
+    def predicted_logistic_gains(self) -> None:
+        self.predicted_logistic_ach_gains = (
+            self.predicted_logistic_ach_ratio * self.ach_total - self.ach_earned
+        )
+        self.predicted_logistic_ta_gains = (
+            self.predicted_logistic_ta_ratio * self.ta_total - self.ta_earned
+        )
+        self.predicted_logistic_gs_gains = (
+            self.predicted_logistic_gs_ratio * self.gs_total - self.gs_earned
         )
