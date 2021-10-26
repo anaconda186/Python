@@ -12,6 +12,33 @@ class Game:
     Create Game Class
     """
 
+    __slots__ = [
+        "name",
+        "link",
+        "ach_total",
+        "ach_earned",
+        "ta_total",
+        "ta_earned",
+        "gs_total",
+        "gs_earned",
+        "ach_ratio",
+        "ta_ration",
+        "ta_ratio",
+        "gs_ratio",
+        "total_difficulty",
+        "difficulty_left",
+        "predicted_logistic_ach_gains",
+        "predicted_logistic_ach_ratio",
+        "predicted_logistic_gs_gains",
+        "predicted_logistic_gs_ratio",
+        "predicted_logistic_ta_gains",
+        "predicted_logistic_ta_ratio",
+        "norm_logistic_ach_gains",
+        "norm_logistic_gs_gains",
+        "norm_logistic_ta_gains",
+        "total_norm_value",
+    ]
+
     def __init__(self, div) -> None:
         """
         Intializes the game object
@@ -46,9 +73,6 @@ class Game:
                 / ((self.ta_total - self.ta_earned) / (self.gs_total / self.gs_earned))
                 ** 2
             )
-        # self.ach_weight = 1 / max(0.001, abs(self.ach_ratio - self.total_difficulty))
-        # self.ta_weight = 1 / max(0.001, abs(self.ta_ratio - self.total_difficulty))
-        # self.gs_weight = 1 / max(0.001, abs(self.gs_ratio - self.total_difficulty))
 
     def __str__(self) -> str:
         title = self.name
@@ -153,66 +177,3 @@ class Game:
             + self.norm_logistic_ta_gains
             + self.norm_logistic_gs_gains
         )
-
-    # def update_ach_weights(self, weight: float, weight_limit: float) -> float:
-    #     self.ach_weight = 1 / max(
-    #         weight_limit, abs(self.ach_ratio - (self.total_difficulty * weight))
-    #     )
-    #     return self.ach_weight
-
-    # def update_ta_weights(self, weight: float, weight_limit: float) -> float:
-    #     self.ta_weight = 1 / max(
-    #         weight_limit, abs(self.ta_ratio - (self.total_difficulty * weight))
-    #     )
-    #     return self.ta_weight
-
-    # def update_gs_weights(self, weight: float, weight_limit: float) -> float:
-    #     self.gs_weight = 1 / max(
-    #         weight_limit, abs(self.gs_ratio - (self.total_difficulty * weight))
-    #     )
-    #     return self.gs_weight
-
-    # def predicted_ratios(
-    #     self,
-    #     total_ach_weight: float,
-    #     total_ach_alpha: float,
-    #     total_ta_weight: float,
-    #     total_ta_alpha: float,
-    #     total_gs_weight: float,
-    #     total_gs_alpha: float,
-    # ) -> None:
-    #     self.predicted_ach_ratio = min(
-    #         1,
-    #         ((self.total_difficulty * total_ach_weight) + total_ach_alpha)
-    #         + (
-    #             (1 - self.ach_ratio)
-    #             * ((self.difficulty_left * total_ach_weight) + total_ach_alpha)
-    #         ),
-    #     )
-    #     self.predicted_ta_ratio = min(
-    #         1,
-    #         ((self.total_difficulty * total_ta_weight) + total_ta_alpha)
-    #         + (
-    #             (1 - self.ta_ratio)
-    #             * ((self.difficulty_left * total_ta_weight) + total_ta_alpha)
-    #         ),
-    #     )
-    #     self.predicted_gs_ratio = min(
-    #         1,
-    #         ((self.total_difficulty * total_gs_weight) + total_gs_alpha)
-    #         + (
-    #             (1 - self.gs_ratio)
-    #             * ((self.difficulty_left * total_gs_weight) + total_gs_alpha)
-    #         ),
-    #     )
-
-    # def predicted_gains(self) -> None:
-    #     self.predicted_ach_gains = (
-    #         self.predicted_ach_ratio * self.ach_total - self.ach_earned
-    #     )
-    #     self.predicted_ta_gains = (
-    #         self.predicted_ta_ratio * self.ta_total - self.ta_earned
-    #     )
-    #     self.predicted_gs_gains = (
-    #         self.predicted_gs_ratio * self.gs_total - self.gs_earned
-    #     )
