@@ -35,6 +35,7 @@ def get_game_list(gamer: str = "Acidreactive") -> list:
 
 def get_curve_fit_xy(game_library: list) -> list[list[float]]:
     xy_values = [[], [], [], [], []]
+    process = []
     for game in game_library:
         game.append_xy_value(xy_values)
     return xy_values
