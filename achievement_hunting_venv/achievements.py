@@ -8,10 +8,12 @@ from game_library_functions import (
     predict_logistic_gains,
 )
 
-if __name__ == "__main__":
+
+def achievements():
 
     # starting variables
-    gamer = input("What is you Gamertag?").replace(" ", "+")
+    # gamer = input("What is you Gamertag?").replace(" ", "+")
+    gamer = "Acidreactive"
 
     t = time.perf_counter()
 
@@ -52,5 +54,9 @@ if __name__ == "__main__":
     print(
         f"GS  | a: {constants[2][0]:.5f}, b: {constants[2][1]:.5f}, c: {constants[2][2]:.5f}, d: {constants[2][3]:.5f}, g:{constants[2][4]:.5f}"
     )
-    print("\n")
-    print(time.perf_counter() - t, "s")
+
+    print(f"{(time.perf_counter() - t):.5f}", "s")
+
+
+if __name__ == "__main__":
+    achievements()

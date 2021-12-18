@@ -1,9 +1,3 @@
-# Global Variables for all Games
-
-import requests
-from bs4 import BeautifulSoup
-
-
 url = "https://www.trueachievements.com"
 
 
@@ -86,7 +80,7 @@ class Game:
         ach = f"{self.ach_earned} of {self.ach_total} achievements"
         ta_points = f"{self.ta_earned} of {self.ta_total} TA Points"
         gs_score = f"{self.gs_earned} of {self.gs_total} GS"
-        return f"\n\n{title} | {ach} | {ta_points} | {gs_score} | {self.total_difficulty}\nAchievement gain: {self.norm_logistic_ach_gains:.2f} (+{self.predicted_logistic_ach_gains:.0f}) | TrueAchievement gain: {self.norm_logistic_ta_gains:.2f} (+{self.predicted_logistic_ta_gains:.0f}) | Gamerscore gain: {self.norm_logistic_gs_gains:.2f} (+{self.predicted_logistic_gs_gains:.0f})\n{url}{self.link}"
+        return f"\n\n{title} | {ach} | {ta_points} | {gs_score} | {self.total_difficulty}\nAchievement gain: {self.norm_logistic_ach_gains:.2f} ({self.predicted_logistic_ach_gains:.0f}) | TrueAchievement gain: {self.norm_logistic_ta_gains:.2f} ({self.predicted_logistic_ta_gains:.0f}) | Gamerscore gain: {self.norm_logistic_gs_gains:.2f} ({self.predicted_logistic_gs_gains:.0f})\n{url}{self.link}"
 
     def append_xy_value(
         self,
