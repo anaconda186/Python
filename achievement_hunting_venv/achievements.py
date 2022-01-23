@@ -40,11 +40,10 @@ def achievements():
     game_library.sort(key=lambda x: x.total_norm_value)
 
     print(game_library[-10:])
-    print("\n")
+    print("")
     print(
         f"Total Ach gain: {total_ach_gain:.0f}, Total TA gain: {total_ta_gain:.0f}, Total GS gain: {total_gs_gain:.0f}, Game Count : {len(game_library)}"
     )
-    print("\n")
     print(
         f"ACH | a: {constants[0][0]:.5f}, b: {constants[0][1]:.5f}, c: {constants[0][2]:.5f}, d: {constants[0][3]:.5f}, g:{constants[0][4]:.5f}"
     )
@@ -54,7 +53,6 @@ def achievements():
     print(
         f"GS  | a: {constants[2][0]:.5f}, b: {constants[2][1]:.5f}, c: {constants[2][2]:.5f}, d: {constants[2][3]:.5f}, g:{constants[2][4]:.5f}"
     )
-
     print(f"{(time.perf_counter() - t):.5f}", "s")
 
 
